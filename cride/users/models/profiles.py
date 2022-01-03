@@ -13,7 +13,7 @@ class Profile(CRideModel):
 	picture and statistics.	
 	"""
 	
-	users = models.OneToOneField('users.User',on_delete=models.CASCADE)
+	user = models.OneToOneField('users.User',on_delete=models.CASCADE)
 	
 	picture = models.ImageField(
 		'profile picture',
@@ -24,13 +24,13 @@ class Profile(CRideModel):
 	
 	biography = models.TextField(max_length=500, blank=True)
 
-# Stats
-rides_taken = models.PositiveIntegerField(default=0)
-rides_offered = models.PositiveIntegerField(default=0)
-reputation = models.FloatField(
-	default=5.0,
-	help_text='Users reputation based on the rides taken and offered'
-)
+	# Stats
+	rides_taken = models.PositiveIntegerField(default=0)
+	rides_offered = models.PositiveIntegerField(default=0)
+	reputation = models.FloatField(
+		default=5.0,
+		help_text='Users reputation based on the rides taken and offered'
+	)
 
 def __str__(self):
 	"""Return user's str representation."""
