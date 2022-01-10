@@ -21,6 +21,7 @@ class CircleViewSet(mixins.CreateModelMixin,
                    viewsets.GenericViewSet):
                    
     serializer_class = CircleModelSerializer
+    lookup_field = 'slug_name'
 
     def get_queryset(self):
         """Restrict list to public-only circles
