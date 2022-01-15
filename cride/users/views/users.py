@@ -12,7 +12,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from cride.users.permissions.users import IsAccountOwner
 
 # Serializers
-from cride.users.serializers import UserLoginSerializer, UserModelSerializer, UserSignUpSerializer, AccountVerificationSerializer
+from cride.users.serializers import UserLoginSerializer, UserModelSerializer, UserSignUpSerializer, AccountVerificationSerializer, ProfileModelSerializer
 from cride.circles.serializers import CircleModelSerializer
 
 # Models
@@ -20,6 +20,7 @@ from cride.users.models import User
 from cride.circles.models import Circle
 
 class UserViewSet(mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
                   viewsets.GenericViewSet):
     """User view set.
     Handle sign up, login and account verification.
@@ -30,16 +31,12 @@ class UserViewSet(mixins.RetrieveModelMixin,
 
     def get_permissions(self):
         """Assign permissions based on action"""
-        print(self.action)
         if self.action in ['signup','login','verify']:
             permissions=[AllowAny]
-            print('TEST2')
-        elif self.action == 'retrieve':
+        elif self.action in ['retrieve','update','partial_update','profile']:
             permissions = [IsAuthenticated,IsAccountOwner]
         else:
             permissions = [IsAuthenticated,]
-            print('TEST')
-        print(permissions)
         return [permission() for permission in permissions]
 
     @action(detail=False,methods=['post'])
@@ -85,3 +82,21 @@ class UserViewSet(mixins.RetrieveModelMixin,
         }
         response.data = data
         return response
+
+    @action(detail=True,methods=['put','patch'])    
+    def profile(self,request,*args,**kwargs):
+        """Update user profile data"""
+        user = self.get_object()
+        profile = user.profile
+        partial = request.method == 'PATCH'
+        serializer = ProfileModelSerializer(
+            profile,
+            data=request.data,
+            partial=partial
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        data = UserModelSerializer(user).data
+        return Response(data)
+
+

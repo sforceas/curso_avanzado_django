@@ -20,11 +20,16 @@ import jwt
 # Models
 from cride.users.models import User, Profile
 
+# Serializers
+from cride.users.serializers.profiles import ProfileModelSerializer
+
 #Utilities
 from datetime import timedelta
 
 class UserModelSerializer(serializers.ModelSerializer):
     """User Model Serializer."""
+
+    profile = ProfileModelSerializer(read_only=True)
 
     class Meta:
         """Meta class"""
@@ -34,8 +39,11 @@ class UserModelSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'email',
-            'phone_number'
+            'phone_number',
+            'profile'
         )
+        read_only_fields = ('profile',)
+        depth = 1
 
 class UserLoginSerializer(serializers.Serializer):
     """User Login Serializer.
@@ -148,7 +156,6 @@ class AccountVerificationSerializer(serializers.Serializer):
             raise serializers.ValidationError('Verification link has expired.')
         except jwt.PyJWTError:
             raise serializers.ValidationError('Invalid token')
-        
         if payload['type'] != 'email_confirmation':
             raise serializers.ValidationError('Invalid token.')
         self.context['payload']=payload
