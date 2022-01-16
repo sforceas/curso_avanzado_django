@@ -1,6 +1,7 @@
 """Membership permissions"""
 
 # Django REST Framework
+from lib2to3.pytree import Base
 from rest_framework.permissions import BasePermission
 
 # Models
@@ -46,3 +47,15 @@ class IsAdminOrMembershipOwner(BasePermission):
         except Membership.DoesNotExist:
             return False
         return True
+
+class IsMembershipOwner(BasePermission):
+    """Allow access only to membership owner"""
+    
+    def has_permission(self, request, view):
+        """Gets membership as obj and chechs object permission"""
+        obj = view.get_object()
+        return self.has_object_permission(request,view,obj)
+    
+    def has_object_permission(self,request,view,obj):
+        """Check that the request comes from the membership owner"""
+        return request.user==obj.user
