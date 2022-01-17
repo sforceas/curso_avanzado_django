@@ -7,10 +7,11 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 # Celery
-from celery.decorators import task
+from celery.decorators import task, periodic_task
 
 # Models
 from cride.users.models import User
+from cride.rides.models import Ride
 
 # JSON Web Token 
 import jwt
@@ -44,3 +45,13 @@ def gen_verification_token(user):
     }
     token = jwt.encode(payload,settings.SECRET_KEY, algorithm = 'HS256')
     return token
+
+@periodic_task(name='disable_finished_rides',run_every=timedelta(minutes=20))
+def disable_finished_rides():
+    """Disable finished rides"""
+    now = timezone.now()
+    offset = now + timedelta(minutes=20)
+
+    """Update rides that have already finished"""
+    rides = Ride.objects.filter(is_active=True,arrival_date__gte=now,arrival_date__lte=offset)
+    rides.update(is_active = False)
